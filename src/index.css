@@ -1,0 +1,249 @@
+/* Cascade order: Tailwind theme/base, then MUI, then Tailwind utilities (see main.jsx). */
+@layer theme, base, mui, components, utilities;
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* ── ABHI CABS Brand Palette ── */
+  --color-brand-black:   #111111;
+  --color-brand-yellow:  #FFC107;
+  --color-brand-white:   #FFFFFF;
+
+  --color-primary-400:   #FFC107;
+  --color-primary-500:   #f0a800;
+
+  --color-bg:            #F9F9F7;
+  --color-surface:       #FFFFFF;
+  --color-text:          #111111;
+  --color-secondary:     #5A5A5A;
+  --color-muted:         #9A9A9A;
+  --color-border:        #E8E8E4;
+
+  --color-sidebar-bg:    #111111;
+  --color-sidebar-active:#FFC107;
+
+  --color-success:       #22A65A;
+  --color-warning:       #F59E0B;
+  --color-error:         #DC2626;
+  --color-info:          #2563EB;
+
+  --font-sans:    'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont,
+                  'Helvetica Neue', 'Segoe UI', Arial, sans-serif;
+  /* Brand guidelines PDF: the "ABHI" wordmark is specifically Montserrat
+     Bold — everywhere else in this app already correctly uses SF Pro
+     Display, but nothing loaded Montserrat at all, so any "ABHI" text used
+     the wrong typeface. Used only for that one word, not app-wide. */
+  --font-brand:   'Montserrat', 'SF Pro Display', sans-serif;
+
+  /* FIX: no global type scale existed at all — every page used Tailwind's
+     default text-xs/sm/base/lg/xl sizes (12/14/16/18/20px) individually,
+     which read cramped for a dashboard people use for extended stretches.
+     Overriding the scale here bumps every one of the 250+ existing
+     text-xs/sm/etc. usages app-wide in one place, rather than hunting
+     through each page — same relative hierarchy, just more comfortable
+     absolute sizes. Line-heights bumped to match so text doesn't feel
+     cramped vertically either. */
+  --text-xs:   0.8125rem;  /* 13px, was 12px */
+  --text-xs--line-height: 1.4;
+  --text-sm:   0.9375rem;  /* 15px, was 14px */
+  --text-sm--line-height: 1.5;
+  --text-base: 1.0625rem;  /* 17px, was 16px */
+  --text-base--line-height: 1.55;
+  --text-lg:   1.1875rem;  /* 19px, was 18px */
+  --text-lg--line-height: 1.5;
+  --text-xl:   1.375rem;   /* 22px, was 20px */
+  --text-xl--line-height: 1.4;
+  --text-2xl:  1.625rem;   /* 26px, was 24px */
+  --text-2xl--line-height: 1.3;
+}
+
+/* Global element rules live in the `base` layer so MUI components (layer
+   `mui`, declared after `base`) can style their own inputs and buttons.
+   Unlayered, these beat every MUI style and squashed MUI inputs. */
+@layer base {
+html, body, #root { height: 100%; }
+
+body {
+  background-color: #F9F9F7;
+  color: #111111;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* { box-sizing: border-box; }
+
+/* Smooth scrollbar */
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-thumb { background: #D0D0CA; border-radius: 9999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* Focus ring — yellow brand */
+.focus-ring { outline: none; }
+.focus-ring:focus-visible { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #FFC107; }
+
+/* Smooth transitions for all interactive elements */
+button, a, input, select, textarea {
+  transition: opacity 0.15s, background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Better table row transitions */
+tbody tr { transition: background-color 0.1s; }
+
+/* Animated skeleton */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* Sidebar hover — subtle white tint */
+.hover\:bg-white\/5:hover { background-color: rgba(255,255,255,0.05); }
+.hover\:bg-white\/8:hover { background-color: rgba(255,255,255,0.08); }
+
+/* ── Pointer cursors on interactive elements ─────────────────────────────────
+   Applied globally rather than per-component: the app has ~130 clickable
+   elements across 40+ files, and relying on each one to remember
+   `cursor: pointer` is how they drifted out of sync in the first place.
+   Browsers default <button> to `cursor: default`, which makes buttons feel
+   inert, so this sets the expected affordance everywhere at once. */
+button,
+[role="button"],
+a[href],
+label[for],
+summary,
+select,
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"],
+input[type="file"]::file-selector-button,
+/* Date/time fields open a picker on click — they behave like buttons, not
+   like free-text fields, so they get the hand cursor rather than a caret.
+   The calendar glyph inside them needs it set explicitly in WebKit. */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"],
+input[type="week"],
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Disabled controls must NOT look clickable — this has to come after the
+   rule above to win on specificity ties. */
+button:disabled,
+button[disabled],
+select:disabled,
+input:disabled,
+[aria-disabled="true"],
+[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* Sortable table headers and clickable rows (DataTable renders these as
+   <th><button> and <tr>, the latter with an onClick but no inherent
+   affordance). */
+thead th[aria-sort],
+thead th button {
+  cursor: pointer;
+}
+
+/* Text inputs keep the text caret — a blanket pointer would be wrong here. */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  cursor: text;
+}
+
+/* Drag handles / resizers, where present. */
+[draggable="true"] { cursor: grab; }
+[draggable="true"]:active { cursor: grabbing; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Cross-device safety net — mobile / tablet / laptop
+   Additive only. The admin layout already has a hamburger + mobile sidebar
+   overlay and tables scroll inside their own containers; this just catches the
+   common cross-device issues without touching the tuned layout.
+   ═══════════════════════════════════════════════════════════════════════════ */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Stop stray horizontal scrolling; wide tables keep their own scroll wrapper. */
+html, body { max-width: 100%; overflow-x: hidden; }
+
+img, svg, video, canvas { max-width: 100%; height: auto; }
+p, h1, h2, h3, h4, li, td, th, dd, dt { overflow-wrap: break-word; }
+
+/* iOS zooms when a focused field's font-size is < 16px. */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px !important; }
+}
+
+table { max-width: 100%; }
+
+@media (hover: none) and (pointer: coarse) {
+  button, a[role="button"] { min-height: 40px; }
+}
+
+} /* end @layer base */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Admin layout — collapsible sidebar (authored CSS, NOT Tailwind utilities)
+   The desktop rail's show/hide (below lg), its width, and the matching content
+   margin are all layout-critical, so they live here as real CSS with a media
+   query instead of depending on Tailwind JIT class generation. Collapse state
+   is toggled by adding `.is-collapsed` (see AdminLayout / Sidebar).
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  --terp-sidebar-w: 252px;            /* expanded rail width  */
+  --terp-sidebar-w-collapsed: 76px;   /* collapsed icon rail  */
+}
+
+/* Desktop rail: hidden below the lg breakpoint, shown as a flex column at lg+. */
+.terp-sidebar-desktop {
+  display: none;
+  width: var(--terp-sidebar-w);
+  transition: width .22s ease;
+}
+.terp-sidebar-desktop.is-collapsed { width: var(--terp-sidebar-w-collapsed); }
+
+/* Main content clears the fixed rail; margin tracks the rail width. */
+.terp-content {
+  margin-left: 0;
+  transition: margin-left .22s ease;
+}
+
+@media (min-width: 1024px) {
+  .terp-sidebar-desktop { display: flex; }
+  .terp-content { margin-left: var(--terp-sidebar-w); }
+  .terp-content.is-collapsed { margin-left: var(--terp-sidebar-w-collapsed); }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   New-booking alerts — centre popup (NewBookingPopup) + corner stack
+   (BookingAlertStack). Plain keyframes so they don't depend on Tailwind JIT.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes abhiFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes abhiPopIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes abhiSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
